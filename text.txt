@@ -1,0 +1,25 @@
+follow up - primary care unless said want urgent
+default primary care - unless patient says they want urgent
+new patients defa primary - unless they say they want urgent
+
+- visit reason
+- pimary -urgent
+- doc
+- tracking
+
+
+{
+    "status": 0,
+    "error": "Failed to create appointment",
+    "details": {
+        "code": false,
+        "description": null,
+        "data": null,
+        "error": [
+            "Time slot is not during working hours, please choose another time"
+        ]
+    }
+}
+
+
+- issue for David
