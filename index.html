@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet" />
+  <link rel="stylesheet" href="./styles/popup.css">
 </head>
 
 <body>
@@ -66,6 +67,19 @@
 
           <!-- Step 1: Account Information -->
           <div class="form-step active" data-step="1">
+
+            <button type="button" id="createAccountBtn" class="create-account-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <line x1="19" y1="8" x2="19" y2="14"></line>
+                <line x1="22" y1="11" x2="16" y2="11"></line>
+              </svg>
+              Create Account
+            </button>
+
+            <div id="accountMessage" class="account-message"></div>
             <!-- Implement this later _______------ -->
             <!-- <button
                 type="button"
@@ -275,6 +289,55 @@
     </div>
   </div>
 
+
+  <div id="createAccountModal" class="create-account-modal">
+    <div class="create-account-content">
+      <div class="create-account-header">
+        <h2>Create New Account</h2>
+        <p>Please fill in your information to create an account</p>
+      </div>
+      <div class="create-account-body">
+        <form id="createAccountForm" class="create-account-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="createFirstName">First Name <span class="required">*</span></label>
+              <input type="text" id="createFirstName" placeholder="Enter first name" required />
+            </div>
+            <div class="form-group">
+              <label for="createLastName">Last Name <span class="required">*</span></label>
+              <input type="text" id="createLastName" placeholder="Enter last name" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="createDob">Date of Birth <span class="required">*</span></label>
+            <input type="date" id="createDob" required />
+          </div>
+
+          <div class="form-group">
+            <label for="createPhone">Phone Number</label>
+            <input type="tel" id="createPhone" placeholder="Enter phone number (optional)" />
+          </div>
+
+          <div class="form-group">
+            <label for="createEmail">Email Address</label>
+            <input type="email" id="createEmail" placeholder="Enter email address (optional)" />
+          </div>
+
+          <div class="create-account-loading">
+            <div class="create-account-spinner"></div>
+            <p>Creating account...</p>
+          </div>
+
+          <div class="create-account-actions">
+            <button type="button" class="cancel-btn" id="cancelCreateAccount">Cancel</button>
+            <button type="submit" class="submit-btn" id="submitCreateAccount">Create Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading Indicator -->
   <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-spinner"></div>
@@ -405,6 +468,8 @@
   </div>
 
   <script src="script.js"></script>
+  <script src="popup.js"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import {

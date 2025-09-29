@@ -1175,15 +1175,61 @@ elements.providerSelect.addEventListener("change", () => {
 // });
 
 elements.step1Next.addEventListener("click", () => {
-    goToStep(2); // skip all validations
+    // Get references to the input fields for this step
+    const accountNumberInput = document.getElementById('accountNumber');
+    const locationSelect = document.getElementById('locationSelect');
+
+    // Get the current values, trimming whitespace from the text input
+    const accountNumberValue = accountNumberInput.value.trim();
+    const locationValue = locationSelect.value;
+
+    // --- Validation Logic ---
+
+    // First, remove any previous error styles
+    accountNumberInput.classList.remove('is-invalid');
+    locationSelect.classList.remove('is-invalid');
+
+    // Create a list to hold error messages
+    const errors = [];
+
+    // Check if account number is empty
+    if (accountNumberValue === '') {
+        errors.push('Please enter an Account or Phone number.');
+        accountNumberInput.classList.add('is-invalid'); // Add red border
+    }
+
+    // Check if a location has been selected
+    if (locationValue === '' || locationValue === null) {
+        errors.push('Please select a location.');
+        locationSelect.classList.add('is-invalid'); // Add red border
+    }
+
+    // --- Decision ---
+
+    // If the errors array is empty, it means everything is valid
+    if (errors.length === 0) {
+        // No errors, proceed to the next step
+        goToStep(2);
+    } else {
+        // If there are errors, show them in an alert
+        // The red borders on the fields will also guide the user
+        console.log('error')
+    }
 });
 
 
 
 
 elements.step2Next.addEventListener("click", () => {
+    const visitReason = elements.visitReason.value.trim()
+
     const visitType = elements.visitType.value.trim();
     const appointDate = elements.appointDate.value.trim();
+
+    if (!visitReason) {
+        alert("Please select a visit reason before continuing.");
+        return;
+    }
 
     if (!visitType) {
         alert("Please select a visit type before continuing.");
