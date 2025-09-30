@@ -511,7 +511,9 @@ async function fetchTimeSlots(providerId, availableDate, start_time, end_time) {
         const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
         const dd = String(dateObj.getDate()).padStart(2, "0");
         const yyyy = dateObj.getFullYear();
-        const formattedDate = `${mm}/${dd}/${yyyy}`;
+        // const formattedDate = `${mm}/${dd}/${yyyy}`;
+        const formattedDate = `${yyyy}-${mm}-${dd}`;
+
 
         // Helper to extract integer hour from "7/29/2025, 9:00:00 AM" or "2025-07-29T13:00:00.000Z"
         function toHourInt(dateTimeStr) {
@@ -551,15 +553,15 @@ async function fetchTimeSlots(providerId, availableDate, start_time, end_time) {
         }
 
         const payload = {
-            location_name: siteName,
-            date: formattedDate,
+            facility_name: siteName,
+            target_date: formattedDate,
             business_start_hour: businessStartHour, // integer hour (0-23)
             business_end_hour: businessEndHour,     // integer hour (0-23)
             slot_length: 15,
             provider_name: providerName,
         };
 
-        const response = await fetch(`${API_BASE_URL}/time-slots`, {
+        const response = await fetch(`${TIME_SLOTS_API_URL}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -744,6 +746,9 @@ function getFreestTimeSlots(data, topCount = 4) {
     return selected.sort((a, b) => a.date - b.date).map(({ text, id }) => ({ text, id }));
 }
 
+const TIME_SLOTS_API_URL = 'https://careplan-extension-v2-564097302460.us-central1.run.app/api/time-slots';
+
+
 function renderTimeSlots(slots) {
     elements.timeSlots.innerHTML = "";
     state.selectedSlotId = null;
@@ -777,7 +782,14 @@ function renderTimeSlots(slots) {
             document.querySelectorAll(".time-slot").forEach((el) => el.classList.remove("selected"));
             timeSlot.classList.add("selected");
             state.selectedSlotId = slot.id;
-            checkFormValidity();
+            // checkFormValidity();
+            if (state.selectedSlotId !== null) {
+                // If a slot ID exists, ENABLE the button
+                submitBtn.disabled = false;
+            } else {
+                // If no slot ID exists, DISABLE the button
+                submitBtn.disabled = true;
+            }
         });
         bestContainer.appendChild(timeSlot);
     });
@@ -808,7 +820,14 @@ function renderTimeSlots(slots) {
             document.querySelectorAll(".time-slot").forEach((el) => el.classList.remove("selected"));
             timeSlot.classList.add("selected");
             state.selectedSlotId = slot.id;
-            checkFormValidity();
+            if (state.selectedSlotId !== null) {
+                // If a slot ID exists, ENABLE the button
+                submitBtn.disabled = false;
+            } else {
+                // If no slot ID exists, DISABLE the button
+                submitBtn.disabled = true;
+            }
+            // checkFormValidity();
         });
         allContainer.appendChild(timeSlot);
     });
@@ -823,7 +842,7 @@ function renderTimeSlots(slots) {
     // Add to DOM
     elements.timeSlots.appendChild(wrapper);
     elements.timeSlotsSection.style.display = "block";
-    checkFormValidity();
+    // checkFormValidity();
 }
 
 // ----------------- Event Listeners -----------------
@@ -983,7 +1002,7 @@ elements.searchAccountBtn.addEventListener("click", async () => {
         }
     }
     // Re-check validity and fetch appointments after search attempt
-    checkFormValidity();
+    // checkFormValidity();
     if (state.selectedPatientId && elements.locationSelect.value) {
         fetchAppointments(); // Fetch appointments only if a patient is confirmed
     } else {
@@ -1041,7 +1060,7 @@ document.getElementById("patientSelect").addEventListener("change", (event) => {
         state.selectedPatientId = null;
         state.patientId = null;
         renderPatientInfoBox(null); // Clear info box
-        checkFormValidity(); // Re-check form validity
+        // checkFormValidity(); // Re-check form validity
         fetchAppointments(); // Re-fetch/clear appointments based on lack of patient ID
         return;
     }
@@ -1068,14 +1087,14 @@ document.getElementById("patientSelect").addEventListener("change", (event) => {
     }
 
     // After selecting a patient, re-check form validity and fetch appointments
-    checkFormValidity();
+    // checkFormValidity();
     fetchAppointments(); // Fetch appointments for the newly selected patient
 });
 
 // Modify the locationSelect event listener to handle special locations
 elements.locationSelect.addEventListener("change", () => {
     fetchAppointments();
-    checkFormValidity();
+    // checkFormValidity();
 
     // Get the selected location text
     const selectedOption = elements.locationSelect.options[elements.locationSelect.selectedIndex];
@@ -1116,7 +1135,7 @@ elements.locationSelect.addEventListener("change", () => {
 
 // Visit type change
 elements.visitType.addEventListener("change", () => {
-    checkFormValidity();
+    // checkFormValidity();
 });
 
 // Same provider change
@@ -1128,7 +1147,7 @@ elements.sameProvider.addEventListener("change", () => {
 
 // Appointment date change
 elements.appointDate.addEventListener("change", () => {
-    checkFormValidity();
+    // checkFormValidity();
 });
 
 // Provider select change
@@ -1150,7 +1169,7 @@ elements.providerSelect.addEventListener("change", () => {
         console.error("❌ Missing time range for provider selection.");
     }
 
-    checkFormValidity();
+    // checkFormValidity();
 });
 
 // Step navigation
@@ -1347,14 +1366,15 @@ elements.form.addEventListener("submit", async (e) => {
         start_time: startTime,
         end_time: endTime,
         visit_type: visitType,
-        reason: visitReason
+        reason: visitReason,
+        source: 'follow_up_scheduler',
     };
 
     // Show success modal immediately, do not show loader
     showSuccessModal();
 
     // Fire-and-forget the request
-    fetch("https://ecw-automation-service-277265452244.us-central1.run.app/book-appointment", {
+    fetch("https://ecw-fast-api-277265452244.us-central1.run.app/book-appointment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -1388,7 +1408,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initDateInput();
 
     // Set initial form state
-    checkFormValidity();
+    // checkFormValidity();
 
     // Initialize visit type visibility based on selected location
     elements.locationSelect.dispatchEvent(new Event("change"));
@@ -1396,24 +1416,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Select the chips and date input elements
 const chip3Days = document.getElementById("chip-3days");
+
 const chip7Days = document.getElementById("chip-7days");
+const chip14Days = document.getElementById("chip-14days");
+
 const appointDateInput = document.getElementById("appointDate");
 
 // Add click event listeners to the chips
 chip3Days.addEventListener("click", () => setDate(3));
 chip7Days.addEventListener("click", () => setDate(7));
+chip14Days.addEventListener("click", () => setDate(14));
+
 
 // Function to set the date
 function setDate(daysFromToday) {
     // Remove the 'selected' class from both chips
     chip3Days.classList.remove("selected");
     chip7Days.classList.remove("selected");
+    chip14Days.classList.remove("selected");
+
 
     // Add 'selected' class to the clicked chip
     if (daysFromToday === 3) {
         chip3Days.classList.add("selected");
     } else if (daysFromToday === 7) {
         chip7Days.classList.add("selected");
+    } else if (daysFromToday === 14) {
+        chip14Days.classList.add("selected");
     }
 
     // Calculate the new date based on the selected days
