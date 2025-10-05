@@ -191,6 +191,7 @@ const elements = {
     form: document.getElementById("bookingForm"),
     accountSelect: document.getElementById('accountSelect'),
     accountNumber: document.getElementById("accountNumber"),
+    accountSelection: document.getElementById('accountSelection'),
     locationSelect: document.getElementById("locationSelect"),
     appointmentResults: document.getElementById("appointmentResults"),
     appointmentOutput: document.getElementById("appointmentOutput"),
@@ -1325,7 +1326,7 @@ elements.form.addEventListener("submit", async (e) => {
     const appointDate = elements.appointDate.value;
     const visitReason = elements.visitReason?.value;
 
-    if (!accountNumber || !locationIds || !providerId || !selectedSlot || !visitType || !appointDate || !visitReason) {
+    if (!locationIds || !providerId || !selectedSlot || !visitType || !appointDate || !visitReason) {
         alert("Missing required fields. Please complete the form.");
         return;
     }
@@ -1387,22 +1388,26 @@ elements.form.addEventListener("submit", async (e) => {
         appointmentDate = `${mm}/${dd}/${yyyy}`;
     }
     let finalAccountNumber;
-    // Check if the account selection dropdown is visible and has a valid value.
-    if (elements.accountSelect.style.display !== 'none' && elements.accountSelect.value) {
-        // FLOW B: User selected from the dropdown.
-        // The value of the select IS the account number.
-        finalAccountNumber = elements.accountSelect.value;
+
+    // Get the current value from the dropdown. It will be an empty string "" if "-- Select --" is chosen.
+    const selectedDropdownValue = elements.accountSelect.value;
+
+    // Check if the phone number flow was activated (dropdown is visible) AND a valid choice was made.
+    if (elements.accountSelection.style.display !== 'none' && selectedDropdownValue) {
+
+        // --- FLOW 1: USER SELECTED FROM THE DROPDOWN ---
+        // This is the highest priority. The dropdown value IS the account number.
+        finalAccountNumber = selectedDropdownValue;
+        console.log("Using account number from dropdown selection:", finalAccountNumber);
 
     } else {
-        // FLOW A: User typed directly into the input.
+
+        // --- FLOW 2: USER TYPED DIRECTLY (OR IGNORED THE DROPDOWN) ---
+        // Fall back to the original text input as the source of truth.
         finalAccountNumber = elements.accountNumber.value.trim();
+        console.log("Using account number from text input:", finalAccountNumber);
     }
 
-    // Now, perform validation with the correct number.
-    if (!finalAccountNumber /* || other checks... */) {
-        alert("Please provide or select an account number.");
-        return;
-    }
     const payload = {
         account_number: finalAccountNumber,
         location_name: locationName,
