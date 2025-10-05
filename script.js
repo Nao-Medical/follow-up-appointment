@@ -187,7 +187,9 @@ const locationOptions = [
 
 // ----------------- DOM Elements -----------------
 const elements = {
+
     form: document.getElementById("bookingForm"),
+    accountSelect: document.getElementById('accountSelect'),
     accountNumber: document.getElementById("accountNumber"),
     locationSelect: document.getElementById("locationSelect"),
     appointmentResults: document.getElementById("appointmentResults"),
@@ -229,6 +231,7 @@ const state = {
     searchedPatient: false,
     searchByPhone: false,
     patients: [],
+    accounts: [],
 };
 
 // ----------------- Helper Functions -----------------
@@ -561,19 +564,37 @@ async function fetchTimeSlots(providerId, availableDate, start_time, end_time) {
             provider_name: providerName,
         };
 
-        const response = await fetch(`${TIME_SLOTS_API_URL}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
+        // const response = await fetch(`${TIME_SLOTS_API_URL}`, {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify(payload),
+        // });
 
-        const slotData = await response.json();
+        // const slotData = await response.json();
 
         // Map slot strings to objects for renderTimeSlots
+        // const slots = Array.isArray(slotData.slots)
+        //     ? slotData.slots.map(slotStr => ({
+        //         text: slotStr,
+        //         id: slotStr // Use slot string as unique id
+        //     }))
+        //     : [];
+
+        const mockSlotData = {
+            slots: [
+                "09:00 AM",
+                "09:15 AM",
+                "09:30 AM",
+                "10:00 AM",
+                "10:45 AM",
+                "11:30 AM"
+            ]
+        };
+        const slotData = mockSlotData;
         const slots = Array.isArray(slotData.slots)
             ? slotData.slots.map(slotStr => ({
                 text: slotStr,
-                id: slotStr // Use slot string as unique id
+                id: slotStr
             }))
             : [];
 
@@ -877,7 +898,7 @@ function renderPatientInfoBox(patient) {
                 <p><strong>Name:</strong> ${patient.first_name} ${patient.last_name}</p>
                 <p><strong>Email:</strong> ${patient.email || "N/A"}</p>
                 <p><strong>Phone:</strong> ${patient.phone_number || "N/A"}</p>
-                <p><strong>DOB:</strong> ${patient.date_of_birth ? formatDOBToMMDDYYYY(patient.date_of_birth) : "N/A"}</p>
+                <p><strong>DOB:</strong> ${patient.date_of_birth}</p>
             `;
             infoBox.style.color = "black";
             infoBox.style.display = "block";
@@ -894,7 +915,7 @@ function renderPatientInfoBox(patient) {
                 <p><strong>Name:</strong> ${patient.first_name} ${patient.last_name}</p>
                 <p><strong>Email:</strong> ${patient.email || "N/A"}</p>
                 <p><strong>Phone:</strong> ${patient.phone_number || "N/A"}</p>
-                <p><strong>DOB:</strong> ${patient.date_of_birth ? formatDOBToMMDDYYYY(patient.date_of_birth) : "N/A"}</p>
+                <p><strong>DOB:</strong> ${patient.date_of_birth}</p>
             `;
             infoBox.style.color = "black";
             infoBox.style.display = "block";
@@ -922,8 +943,8 @@ elements.searchAccountBtn.addEventListener("click", async () => {
     state.patients = [];
     state.searchedPatient = false;
     renderPatientInfoBox(null);
-    renderPatientSelection([]);
-    document.getElementById("patientSelection").style.display = "none"; // Hide dropdown initially
+    renderAccountSelection([]);
+    document.getElementById("accountSelection").style.display = "none"; // Hide dropdown initially
 
     // Check if the input contains only digits
     if (!/^\d+$/.test(input) || input.length === 0) {
@@ -973,16 +994,16 @@ elements.searchAccountBtn.addEventListener("click", async () => {
         // ----- Treat as phone number (> 6 digits) -----
         state.searchByPhone = true;
         try {
-            const response = await fetch(`${API_BASE_URL}/check-account`, {
+            const response = await fetch(`${API_BASE_URL}/patient-info-by-phone`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ phone_number: input }),
             });
             const result = await response.json();
 
-            if (result?.patients && result.patients.length > 0) {
-                state.patients = result.patients; // Store the list of patients found
-                renderPatientSelection(result.patients); // Display the dropdown
+            if (result && result.length > 0) {
+                state.patients = result; // Store the list of patients found
+                renderAccountSelection(result); // Display the dropdown
                 state.searchedPatient = true; // Mark search as having found potential matches
                 // ❗ DO NOT set selectedPatientId/patientId here yet. Wait for user selection.
                 renderPatientInfoBox(null); // Clear info box until user selects
@@ -1013,46 +1034,46 @@ elements.searchAccountBtn.addEventListener("click", async () => {
 
 
 // Function to render the patient selection options (if multiple accounts found)
-function renderPatientSelection(patients) {
-    const patientSelect = document.getElementById("patientSelect");
-    const patientSelectionDiv = document.getElementById("patientSelection");
+function renderAccountSelection(accounts) {
+    state.accounts = accounts;
+    const accountSelect = document.getElementById("accountSelect");
+    const accountSelectionDiv = document.getElementById("accountSelection");
 
     // Clear previous options
-    patientSelect.innerHTML = "";
+    accountSelect.innerHTML = "";
 
     // Add a default option to prompt the user to select
     const defaultOption = document.createElement("option");
     defaultOption.value = "";
-    defaultOption.textContent = "-- Select Patient --";
+    defaultOption.textContent = "-- Select Account --";
     defaultOption.disabled = true;
     defaultOption.selected = true;
-    patientSelect.appendChild(defaultOption);
+    accountSelect.appendChild(defaultOption);
 
     // Loop through each patient and add detailed info
-    patients.forEach((patient) => {
+    accounts.forEach((patient) => {
         const option = document.createElement("option");
-        option.value = patient.id;
+        option.value = patient.acct_no;
 
         // Display patient info in a detailed and user-friendly way
         const patientInfo = `
             ${patient.first_name} ${patient.last_name} 
-            (${patient.phone_number}) 
-            - ${patient.email || "N/A"} 
-            - ${patient.date_of_birth ? formatDOBToMMDDYYYY(patient.date_of_birth) : "N/A"}
-            - ${patient.address_line_1 || "N/A"}, ${patient.address_line_2 || "N/A"}
+            (${patient.dob}) 
+            - ${patient.acct_no || "N/A"} 
+          
         `;
 
         option.textContent = patientInfo;
-        patientSelect.appendChild(option);
+        accountSelect.appendChild(option);
     });
 
     // Display the patient selection dropdown
-    patientSelectionDiv.style.display = "block";
+    accountSelectionDiv.style.display = "block";
 }
 
 
 // Event listener for when a patient is selected (search by phone)
-document.getElementById("patientSelect").addEventListener("change", (event) => {
+document.getElementById("accountSelect").addEventListener("change", (event) => {
     const selectedIdString = event.target.value; // Get the ID (as a string) from the selected <option>
 
     // Reset if the default "-- Select Patient --" option is chosen
@@ -1286,8 +1307,16 @@ elements.step3Back.addEventListener("click", () => {
 // Form submission
 elements.form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const selectedAccountNumber = elements.accountSelect.value;
 
-    const accountNumber = elements.accountNumber.value.trim();
+    // 2. Find the full account object from our stored state.
+    //    We use == because option values are strings, but the ID might be a number.
+    const selectedAccount = state.accounts.find(acc => acc.acct_no === selectedAccountNumber);
+
+    // 3. Get the account number. If nothing is found, it will be null.
+    const accountNumber = selectedAccountNumber;
+
+    // const accountNumber = elements.accountNumber.value.trim();
     const locationIds = getSelectedLocationIds();
     const providerId = elements.providerSelect.value;
     const patient = state.patientDetails;
@@ -1357,9 +1386,25 @@ elements.form.addEventListener("submit", async (e) => {
         const [yyyy, mm, dd] = appointDate.split("-");
         appointmentDate = `${mm}/${dd}/${yyyy}`;
     }
+    let finalAccountNumber;
+    // Check if the account selection dropdown is visible and has a valid value.
+    if (elements.accountSelect.style.display !== 'none' && elements.accountSelect.value) {
+        // FLOW B: User selected from the dropdown.
+        // The value of the select IS the account number.
+        finalAccountNumber = elements.accountSelect.value;
 
+    } else {
+        // FLOW A: User typed directly into the input.
+        finalAccountNumber = elements.accountNumber.value.trim();
+    }
+
+    // Now, perform validation with the correct number.
+    if (!finalAccountNumber /* || other checks... */) {
+        alert("Please provide or select an account number.");
+        return;
+    }
     const payload = {
-        account_number: accountNumber,
+        account_number: finalAccountNumber,
         location_name: locationName,
         provider_name: providerName,
         appointment_date: appointmentDate,
