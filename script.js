@@ -565,56 +565,56 @@ async function fetchTimeSlots(providerId, availableDate, start_time, end_time) {
             provider_name: providerName,
         };
 
-        // const response = await fetch(`${TIME_SLOTS_API_URL}`, {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify(payload),
-        // });
+        const response = await fetch(`${TIME_SLOTS_API_URL}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
 
-        // const slotData = await response.json();
+        const slotData = await response.json();
 
         // Map slot strings to objects for renderTimeSlots
-        // const slots = Array.isArray(slotData.slots)
-        //     ? slotData.slots.map(slotStr => ({
-        //         text: slotStr,
-        //         id: slotStr // Use slot string as unique id
-        //     }))
-        //     : [];
-
-        const mockSlotData = {
-            "slots": [
-                "09:00 AM",
-                "09:15 AM",
-                "09:30 AM",
-                "10:00 AM",
-                "10:45 AM",
-                "11:30 AM",
-                "11:45 AM",
-                "12:00 PM",
-                "12:15 PM",
-                "12:30 PM",
-                "12:45 PM",
-                "01:00 PM",
-                "01:15 PM",
-                "01:30 PM",
-                "01:45 PM",
-                "02:00 PM",
-                "02:15 PM",
-                "02:30 PM",
-                "02:45 PM",
-                "03:00 PM",
-                "03:15 PM",
-                "03:30 PM",
-                "03:45 PM"
-            ]
-        };
-        const slotData = mockSlotData;
         const slots = Array.isArray(slotData.slots)
             ? slotData.slots.map(slotStr => ({
                 text: slotStr,
-                id: slotStr
+                id: slotStr // Use slot string as unique id
             }))
             : [];
+
+        // const mockSlotData = {
+        //     "slots": [
+        //         "09:00 AM",
+        //         "09:15 AM",
+        //         "09:30 AM",
+        //         "10:00 AM",
+        //         "10:45 AM",
+        //         "11:30 AM",
+        //         "11:45 AM",
+        //         "12:00 PM",
+        //         "12:15 PM",
+        //         "12:30 PM",
+        //         "12:45 PM",
+        //         "01:00 PM",
+        //         "01:15 PM",
+        //         "01:30 PM",
+        //         "01:45 PM",
+        //         "02:00 PM",
+        //         "02:15 PM",
+        //         "02:30 PM",
+        //         "02:45 PM",
+        //         "03:00 PM",
+        //         "03:15 PM",
+        //         "03:30 PM",
+        //         "03:45 PM"
+        //     ]
+        // };
+        // const slotData = mockSlotData;
+        // const slots = Array.isArray(slotData.slots)
+        //     ? slotData.slots.map(slotStr => ({
+        //         text: slotStr,
+        //         id: slotStr
+        //     }))
+        //     : [];
 
         renderTimeSlots(slots);
     } catch (error) {
