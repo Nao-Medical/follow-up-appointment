@@ -785,7 +785,7 @@ function getFreestTimeSlots(data, topCount = 4) {
     return selected.sort((a, b) => a.date - b.date).map(({ text, id }) => ({ text, id }));
 }
 
-const TIME_SLOTS_API_URL = 'https://careplan-extension-v2-564097302460.us-central1.run.app/api/time-slots';
+const TIME_SLOTS_API_URL = ' https://data-service-564097302460.us-central1.run.app/api/time-slots';
 
 
 function renderTimeSlots(slots) {
